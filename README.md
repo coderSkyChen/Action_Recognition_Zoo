@@ -12,7 +12,7 @@ Codes for popular action recognition models, written based on pytorch, verified 
 ### Dataset
 - **Download** the [something-something](https://www.twentybn.com/datasets/something-something) dataset. Decompress them into some folder.
 - Note that this dataset contains 108,499 videos and each video is presented in JPG images. The JPG images were extracted from the orginal videos at 12 frames per seconds.
-- The temporal evolution in videos is important for this dataset, so it's hard for some classic models such as: Two-Stream Convolutional Networks for Action Recognition in Videos, NIPS 2014.
+- The temporal evolution in videos is important for this dataset, so it's hard for some classic models which pay attention to short motion such as: Two-Stream Convolutional Networks for Action Recognition in Videos, NIPS 2014.
 ### Prepare optical flow using Opencv
 Note that optical flow is an important modal feature in two-stream series methods, which contains the motion information of videos.
 
