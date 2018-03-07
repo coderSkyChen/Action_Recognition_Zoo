@@ -35,15 +35,15 @@ Before using the code you should modify the path in main.cpp or gpu_main.cpp.
 python process_dataset.py
 ```
 
-## Models
+# Models
 Before using the code you should modify the path as your own.
-### Two stream action recognition
+## Two stream action recognition
 **Main Reference Paper**: [Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
 - Base CNN: BN-Inception pretrained on ImageNet.
 - Partical BN and cross-modality tricks have been used in the code.
 - Spatial stream: it's input is single rgb frame.
 - Temporal stream: it's input is stacked optical flows.
-#### Training
+### Training
 - Spatial CNN: A single rgb frame is randomly selected for a video, which equals to image classification，input channel is 3.
 - Temporal CNN: 5 consequent stacked optical flows are selected for a video, input channel is 5*2(2 channels:x and y).
 
@@ -54,7 +54,7 @@ python main.py RGB two-stream-rgb --arch BNInception --batch_size 256
 train for temporal stream:
 python main.py Flow two-stream-flow --arch BNInception --batch_size 64 --lr 0.0008
 ```
-#### Testing on validation set
+### Testing on validation set
 At test time, given a video, i sample a fixed number of frames (25 for spatial stream and 8 for temporal stream in my experiments) with equal temporal spacing between them. From each of the frames i then obtain 10 ConvNet
 inputs by cropping and flipping four corners and the center of the frame. The class scores for the
 whole video are then obtained by averaging the scores across the sampled frames and crops therein.
@@ -74,9 +74,11 @@ fusion: combine spatial stream and temporal stream results.
 python average_scores.py
 ```
 
-#### Results
+#### Results on validation set
 |Methods|Pre@1|
 |--------------|:-----:|
 |Spatial-stream|2.23%|
 |Temporal-stream|3.65%|
 |Two-stream|7.6%|
+
+## Todo: TSN
