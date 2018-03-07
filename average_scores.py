@@ -1,0 +1,30 @@
+import numpy as np
+import pdb
+
+def valid():
+    files_scores = ['/home/mcg/cxk/action-recognition-zoo/results/two-stream-flow/output/flow.npz', '/home/mcg/cxk/action-recognition-zoo/results/two-stream-rgb/output/rgb.npz']
+
+    allsum = np.zeros([11522, 174])
+    labels = []
+    for filename in files_scores:
+        print(filename)
+        data = np.load(filename)
+        scores = data['scores']
+        # print(scores.shape)
+        ss = scores[:, 0]
+        ll = scores[:, 1]
+        labels.append(ll)
+        ss = [x.reshape(174) for x in ss]
+
+        allsum += ss
+
+    preds = np.argmax(allsum,axis=1)
+
+    num_correct = np.sum(preds == labels)
+    acc = num_correct * 1.0 / preds.shape[0]
+    print('acc=%.3f' % (acc))
+
+
+
+if __name__ == '__main__':
+    valid()
