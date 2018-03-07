@@ -30,3 +30,7 @@ make -f gpu_makefile gpu_bin      #for gpu
 ```
 Before using the code you should modify the path in main.cpp or gpu_main.cpp.
 
+### Generate the meta files
+```
+python process_dataset.py
+```
