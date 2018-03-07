@@ -1,3 +1,7 @@
+# @Author  : Sky chen
+# @Email   : dzhchxk@126.com
+# @Personal homepage  : https://coderskychen.cn
+
 from torch import nn
 
 from transforms import *

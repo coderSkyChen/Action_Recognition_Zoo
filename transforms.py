@@ -1,3 +1,7 @@
+# @Author  : Sky chen
+# @Email   : dzhchxk@126.com
+# @Personal homepage  : https://coderskychen.cn
+
 import torchvision
 import random
 from PIL import Image, ImageOps

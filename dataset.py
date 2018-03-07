@@ -1,3 +1,7 @@
+# @Author  : Sky chen
+# @Email   : dzhchxk@126.com
+# @Personal homepage  : https://coderskychen.cn
+
 import torch.utils.data as data
 
 from PIL import Image

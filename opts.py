@@ -1,3 +1,7 @@
+# @Author  : Sky chen
+# @Email   : dzhchxk@126.com
+# @Personal homepage  : https://coderskychen.cn
+
 import argparse
 parser = argparse.ArgumentParser(description="PyTorch implementation of TwoStream")
 parser.add_argument('modality', type=str, choices=['RGB', 'Flow'])

@@ -1,3 +1,7 @@
+# @Author  : Sky chen
+# @Email   : dzhchxk@126.com
+# @Personal homepage  : https://coderskychen.cn
+
 # processing the raw data of the video datasets (Something-something)
 # generate the meta files:
 #   category.txt:               the list of categories.
