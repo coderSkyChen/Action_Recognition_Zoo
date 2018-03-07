@@ -17,6 +17,8 @@ git clone --recursive https://github.com/coderSkyChen/Action_Recognition_Zoo
 - Note that this dataset contains 108,499 videos and each video is presented in JPG images. The JPG images were extracted from the orginal videos at 12 frames per seconds.
 - The temporal evolution in videos is important for this dataset, so it's hard for some classic models such as: Two-Stream Convolutional Networks for Action Recognition in Videos, NIPS 2014.
 ### Prepare optical flow using Opencv
+Note that optical flow is an important modal feature in two-stream series methods, which contains the motion information of videos.
+
 Since there only rgb frames in the official dataset, we need compute optical flow by ourselves.
 
 I apply a TV-L1 optical flow algorithm, pixel values are truncated to the range \[-20, 20\], then rescaled between 0 and 255, each optical flow has two channels representing horizontal and vertical components. Note that the fps in original dataset is 12, which is too fast for optical flow computing in practice, so i sample frame at 6fps.
