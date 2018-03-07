@@ -8,9 +8,6 @@ Codes for popular action recognition models, written based on pytorch, verified 
 - Pytorch-0.2.0_3
 - Tensorflow-1.3.1，this is only for the using of tensorboard, it's ok without this, but you need to comment the corresponding codes.
 
-## Install
-git clone --recursive https://github.com/coderSkyChen/Action_Recognition_Zoo
-
 ## Data preparation
 ### Dataset
 - **Download** the [something-something](https://www.twentybn.com/datasets/something-something) dataset. Decompress them into some folder.
