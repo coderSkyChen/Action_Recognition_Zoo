@@ -1,2 +1,2 @@
-# Action_Recognition_Zoo
-复现主流的动作识别算法，在something-something数据库上进行验证。
+# Action Recognition Zoo
+Codes for popular action recognition models, verified on the [something-something](https://www.twentybn.com/datasets/something-something) data set.
