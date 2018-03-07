@@ -76,6 +76,7 @@ python average_scores.py
 
 #### Results
 |Methods|Pre@1|
+|--------------|:-----:|
 |Spatial-stream|2.23%|
 |Temporal-stream|3.65%|
 |Two-stream|7.6%|
