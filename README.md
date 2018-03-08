@@ -83,8 +83,8 @@ python average_scores.py
 #### Results on validation set
 |Methods|Pre@1|
 |--------------|:-----:|
-|Spatial-stream|2.23%|
-|Temporal-stream|3.65%|
-|Two-stream|7.6%|
+|Spatial-stream|-%|
+|Temporal-stream|-%|
+|Two-stream|-%|
 
 ## Todo: TSN
