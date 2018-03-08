@@ -40,6 +40,8 @@ python process_dataset.py
 Before using the code you should modify the path as your own.
 ## Two stream action recognition
 **Main Reference Paper**: [Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
+![ts](http://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/two-stream.png)
+
 - Base CNN: BN-Inception pretrained on ImageNet.
 - Partical BN and cross-modality tricks have been used in the code.
 - Spatial stream: it's input is single rgb frame.
