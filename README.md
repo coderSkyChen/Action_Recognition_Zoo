@@ -20,6 +20,7 @@ Since there only rgb frames in the official dataset, we need compute optical flo
 
 I apply a TV-L1 optical flow algorithm, pixel values are truncated to the range \[-20, 20\], then rescaled between 0 and 255, each optical flow has two channels representing horizontal and vertical components. Note that the fps in original dataset is 12, which is too fast for optical flow computing in practice, so i sample frame at 6fps.
 
+- The command to compute optical flow:
 ```
 cd optical_flow
 make bin                          #for cpu
@@ -47,6 +48,7 @@ Before using the code you should modify the path as your own.
 - Spatial CNN: A single rgb frame is randomly selected for a video, which equals to image classification，input channel is 3.
 - Temporal CNN: 5 consequent stacked optical flows are selected for a video, input channel is 5*2(2 channels:x and y).
 
+- The command to train models:
 ```
 train for spatial stream:
 python main.py RGB two-stream-rgb --arch BNInception --batch_size 256
@@ -59,6 +61,7 @@ At test time, given a video, i sample a fixed number of frames (25 for spatial s
 inputs by cropping and flipping four corners and the center of the frame. The class scores for the
 whole video are then obtained by averaging the scores across the sampled frames and crops therein.
 
+-The command to test models:
 ```
 test for spatial stream:
 python test_models.py --modality RGB --weights TwoStream_RGB_BNInception_checkpoint.pth.tar --train_id two-stream-rgb --save_scores rgb.npz --arch BNInception --test_segments 25
