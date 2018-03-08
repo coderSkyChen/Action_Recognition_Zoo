@@ -91,6 +91,8 @@ class TwoStreamDataSet(data.Dataset):
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
         if self.modality == 'Flow':
             offsets = offsets * 2 + 1
+        else:
+            offsets += 1
         return offsets
 
     def __getitem__(self, index):
@@ -159,24 +161,13 @@ class TSNDataSet(data.Dataset):
         self._parse_list()
 
     def _load_image(self, directory, idx):
-        if self.modality == 'RGB' or self.modality == 'RGBDiff':
+        if self.modality == 'RGB':
             try:
                 return [Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format(idx))).convert('RGB')]
             except Exception:
                 print('error loading image:', os.path.join(self.root_path, directory, self.image_tmpl.format(idx)))
                 return [Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format(1))).convert('RGB')]
         elif self.modality == 'Flow':
-            # try:
-            #     idx_skip = 1 + (idx-1)*5
-            #     flow = Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format(idx_skip))).convert('RGB')
-            # except Exception:
-            #     print('error loading flow file:', os.path.join(self.root_path, directory, self.image_tmpl.format(idx_skip)))
-            #     flow = Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format(1))).convert('RGB')
-            # # the input flow file is RGB image with (flow_x, flow_y, blank) for each channel
-            # flow_x, flow_y, _ = flow.split()
-            # x_img = flow_x.convert('L')
-            # y_img = flow_y.convert('L')
-            # image_tmpl='{:s}_{:05d}.jpg'  self.image_tmpl.format('x', 1) -> 'x_00001.jpg'
             x_img = Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format('x', idx))).convert('L')
             y_img = Image.open(os.path.join(self.root_path, directory, self.image_tmpl.format('y', idx))).convert('L')
             return [x_img, y_img]
@@ -186,15 +177,17 @@ class TSNDataSet(data.Dataset):
         # usualy it is [video_id, num_frames, class_idx]
         if not self.test_mode:
             tmp = [x.strip().split(' ') for x in open(self.list_file)]
-            for item in tmp:
-                item[1] = int(item[1]) / 2
+            if self.modality == 'Flow':
+                for item in tmp:
+                    item[1] = int(item[1]) / 2
             tmp = [item for item in tmp if int(item[1]) >= 3]
             self.video_list = [VideoRecord(item) for item in tmp]
             print('video number:%d' % (len(self.video_list)))
         else:
             tmp = [x.strip().split() for x in open(self.list_file)]
-            for item in tmp:
-                item[1] = int(item[1]) / 2
+            if self.modality == 'Flow':
+                for item in tmp:
+                    item[1] = int(item[1]) / 2
             # tmp = [item for item in tmp if int(item[1]) >= 3]
             self.video_list = [VideoRecord(item) for item in tmp]
             print('video number:%d' % (len(self.video_list)))
@@ -214,17 +207,23 @@ class TSNDataSet(data.Dataset):
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
         else:
             offsets = np.zeros((self.num_segments,))
-
-        return offsets + 1
+        if self.modality == 'Flow':
+            offsets = offsets * 2 + 1
+        else:
+            offsets += 1
+        return offsets
 
     def _get_val_indices(self, record):
         if record.num_frames > self.num_segments + self.new_length - 1:
             tick = (record.num_frames - self.new_length + 1) / float(self.num_segments)
             offsets = np.array([int(tick / 2.0 + tick * x) for x in range(self.num_segments)])
         else:
-            # offsets = np.zeros((self.num_segments,))
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
-        return offsets + 1
+        if self.modality == 'Flow':
+            offsets = offsets * 2 + 1
+        else:
+            offsets += 1
+        return offsets
 
     def _get_test_indices(self, record):
         if record.num_frames > self.num_segments + self.new_length - 1:
@@ -232,7 +231,11 @@ class TSNDataSet(data.Dataset):
             offsets = np.array([int(tick / 2.0 + tick * x) for x in range(self.num_segments)])
         else:
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
-        return offsets + 1
+        if self.modality == 'Flow':
+            offsets = offsets * 2 + 1
+        else:
+            offsets += 1
+        return offsets
 
     def __getitem__(self, index):
         record = self.video_list[index]
@@ -263,10 +266,13 @@ class TSNDataSet(data.Dataset):
         for seg_ind in indices:
             p = int(seg_ind)
             for i in range(self.new_length):  # for optical flow getting a volumn start with seg_ind
-                seg_imgs = self._load_image(record.path, p)
-                images.extend(seg_imgs)
+                img = self._load_image(record.path, p)
+                images.extend(img)
                 if p < record.num_frames:
-                    p += 1
+                    if self.modality == 'RGB':
+                        p += 1
+                    else:
+                        p += 2
 
         # one image: H*W*C
         process_data = self.transform(images)
