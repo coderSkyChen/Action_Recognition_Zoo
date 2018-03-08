@@ -11,6 +11,7 @@ import numpy as np
 from numpy.random import randint
 import random
 
+
 class VideoRecord(object):
     def __init__(self, row):
         self._data = row
@@ -25,7 +26,7 @@ class VideoRecord(object):
 
     @property
     def label(self):
-        if len(self._data)==2:
+        if len(self._data) == 2:
             return -1
         else:
             return int(self._data[2])
@@ -66,50 +67,53 @@ class TwoStreamDataSet(data.Dataset):
         # usualy it is [video_id, num_frames, class_idx]
         if not self.test_mode:
             tmp = [x.strip().split(' ') for x in open(self.list_file)]
-            for item in tmp:
-                item[1] = int(item[1])/2
+            if self.modality == 'Flow':
+                for item in tmp:
+                    item[1] = int(item[1]) / 2
             tmp = [item for item in tmp if int(item[1]) >= 3]
             self.video_list = [VideoRecord(item) for item in tmp]
-            print('video number:%d'%(len(self.video_list)))
+            print('video number:%d' % (len(self.video_list)))
         else:
             tmp = [x.strip().split() for x in open(self.list_file)]
-            for item in tmp:
-                item[1] = int(item[1])/2
+            if self.modality == 'Flow':
+                for item in tmp:
+                    item[1] = int(item[1]) / 2
             # tmp = [item for item in tmp if int(item[1]) >= 3]
             self.video_list = [VideoRecord(item) for item in tmp]
             print('video number:%d' % (len(self.video_list)))
 
     def _get_val_indices(self, record):
-        if record.num_frames/2 > self.num_segments + self.new_length - 1:
-            tick = (record.num_frames/2 - self.new_length + 1) / float(self.num_segments)
+        if record.num_frames > self.num_segments + self.new_length - 1:
+            tick = (record.num_frames - self.new_length + 1) / float(self.num_segments)
             offsets = np.array([int(tick / 2.0 + tick * x) for x in range(self.num_segments)])
         else:
             # offsets = np.zeros((self.num_segments,))
-            offsets = np.sort(randint(record.num_frames/2 - self.new_length + 1, size=self.num_segments))
-        offsets = offsets * 2 +1
+            offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
+        if self.modality == 'Flow':
+            offsets = offsets * 2 + 1
         return offsets
-
 
     def __getitem__(self, index):
         record = self.video_list[index]
         # check this is a legit video folder
-        if self.modality=='RGB':
+        if self.modality == 'RGB':
             while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format(1))):
-                print(os.path.join(self.root_path, record.path, self.image_tmpl.format(1))+' not exists jumpping')
+                print(os.path.join(self.root_path, record.path, self.image_tmpl.format(1)) + ' not exists jumpping')
                 index = np.random.randint(len(self.video_list))
                 record = self.video_list[index]
         else:
-            while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format('x',1))):
-                print(os.path.join(self.root_path, record.path, self.image_tmpl.format('x',1))+' not exists jumpping')
+            while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format('x', 1))):
+                print(
+                    os.path.join(self.root_path, record.path, self.image_tmpl.format('x', 1)) + ' not exists jumpping')
                 index = np.random.randint(len(self.video_list))
                 record = self.video_list[index]
 
         if not self.test_mode:
-            sample_indice = randint(low=1, high=record.num_frames+2-self.new_length)
-            sample_indice = sample_indice*2-1  # flow index 1 3 5 7 ...
+            sample_indice = [randint(low=1, high=record.num_frames + 2 - self.new_length)]
+            if self.modality == 'Flow':
+                sample_indice = sample_indice * 2 - 1  # flow index 1 3 5 7 ...
         else:
             sample_indice = self._get_val_indices(record)
-
 
         return self.get(record, sample_indice)
 
@@ -119,16 +123,16 @@ class TwoStreamDataSet(data.Dataset):
 
         for seg_ind in indice:
             p = int(seg_ind)
-            for i in range(self.new_length):  #for optical flow getting a volumn start with seg_ind
+            for i in range(self.new_length):  # for optical flow getting a volumn start with seg_ind
                 img = self._load_image(record.path, p)
                 images.extend(img)
                 if p < record.num_frames:
-                    if self.modality=='RGB':
+                    if self.modality == 'RGB':
                         p += 1
                     else:
                         p += 2
 
-        #one image: H*W*C
+        # one image: H*W*C
         process_data = self.transform(images)
         return process_data, record.label
 
@@ -140,7 +144,7 @@ class TSNDataSet(data.Dataset):
     def __init__(self, root_path, list_file,
                  num_segments=3, new_length=1, modality='RGB',
                  image_tmpl='img_{:05d}.jpg', transform=None,
-                 force_grayscale=False, random_shift=True, test_mode=False):
+                 random_shift=True, test_mode=False):
 
         self.root_path = root_path
         self.list_file = list_file
@@ -182,11 +186,15 @@ class TSNDataSet(data.Dataset):
         # usualy it is [video_id, num_frames, class_idx]
         if not self.test_mode:
             tmp = [x.strip().split(' ') for x in open(self.list_file)]
+            for item in tmp:
+                item[1] = int(item[1]) / 2
             tmp = [item for item in tmp if int(item[1]) >= 3]
             self.video_list = [VideoRecord(item) for item in tmp]
-            print('video number:%d'%(len(self.video_list)))
+            print('video number:%d' % (len(self.video_list)))
         else:
             tmp = [x.strip().split() for x in open(self.list_file)]
+            for item in tmp:
+                item[1] = int(item[1]) / 2
             # tmp = [item for item in tmp if int(item[1]) >= 3]
             self.video_list = [VideoRecord(item) for item in tmp]
             print('video number:%d' % (len(self.video_list)))
@@ -199,9 +207,10 @@ class TSNDataSet(data.Dataset):
         """
 
         average_duration = (record.num_frames - self.new_length + 1) // self.num_segments
-        if average_duration > 0: #random sample
-            offsets = np.multiply(list(range(self.num_segments)), average_duration) + randint(average_duration, size=self.num_segments)
-        elif record.num_frames > self.num_segments:   #[0,0,1,1,1,2,2,3]     dense sample
+        if average_duration > 0:  # random sample
+            offsets = np.multiply(list(range(self.num_segments)), average_duration) + randint(average_duration,
+                                                                                              size=self.num_segments)
+        elif record.num_frames > self.num_segments:  # [0,0,1,1,1,2,2,3]     dense sample
             offsets = np.sort(randint(record.num_frames - self.new_length + 1, size=self.num_segments))
         else:
             offsets = np.zeros((self.num_segments,))
@@ -228,10 +237,17 @@ class TSNDataSet(data.Dataset):
     def __getitem__(self, index):
         record = self.video_list[index]
         # check this is a legit video folder
-        while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format(1))):
-            print(os.path.join(self.root_path, record.path, self.image_tmpl.format(1))+' not exists jumpping')
-            index = np.random.randint(len(self.video_list))
-            record = self.video_list[index]
+        if self.modality == 'RGB':
+            while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format(1))):
+                print(os.path.join(self.root_path, record.path, self.image_tmpl.format(1)) + ' not exists jumpping')
+                index = np.random.randint(len(self.video_list))
+                record = self.video_list[index]
+        else:
+            while not os.path.exists(os.path.join(self.root_path, record.path, self.image_tmpl.format('x', 1))):
+                print(
+                    os.path.join(self.root_path, record.path, self.image_tmpl.format('x', 1)) + ' not exists jumpping')
+                index = np.random.randint(len(self.video_list))
+                record = self.video_list[index]
 
         if not self.test_mode:
             segment_indices = self._sample_indices(record) if self.random_shift else self._get_val_indices(record)
@@ -246,13 +262,13 @@ class TSNDataSet(data.Dataset):
 
         for seg_ind in indices:
             p = int(seg_ind)
-            for i in range(self.new_length):  #for optical flow getting a volumn start with seg_ind
+            for i in range(self.new_length):  # for optical flow getting a volumn start with seg_ind
                 seg_imgs = self._load_image(record.path, p)
                 images.extend(seg_imgs)
                 if p < record.num_frames:
                     p += 1
 
-        #one image: H*W*C
+        # one image: H*W*C
         process_data = self.transform(images)
         return process_data, record.label
 
