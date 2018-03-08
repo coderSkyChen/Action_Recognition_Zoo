@@ -61,7 +61,7 @@ At test time, given a video, i sample a fixed number of frames (25 for spatial s
 inputs by cropping and flipping four corners and the center of the frame. The class scores for the
 whole video are then obtained by averaging the scores across the sampled frames and crops therein.
 
--The command to test models:
+- The command to test models:
 ```
 test for spatial stream:
 python test_models.py --modality RGB --weights TwoStream_RGB_BNInception_checkpoint.pth.tar --train_id two-stream-rgb --save_scores rgb.npz --arch BNInception --test_segments 25
