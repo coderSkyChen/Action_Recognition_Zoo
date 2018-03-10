@@ -19,8 +19,8 @@ import torch.backends.cudnn as cudnn
 import torch.optim
 from torch.nn.utils import clip_grad_norm
 
-from dataset import TwoStreamDataSet
-from models import TwoStream
+from dataset import *
+from models import *
 from transforms import *
 from opts import parser
 
@@ -64,12 +64,20 @@ def main():
     categories, args.train_list, args.val_list, args.root_path, prefix = return_something_path(args.modality)
     num_class = len(categories)
 
-    args.store_name = '_'.join(['TwoStream', args.modality, args.arch])
+    args.store_name = '_'.join([args.model, args.modality, args.arch])
     print('storing name: ' + args.store_name)
 
-    model = TwoStream(num_class, args.modality,
-                 base_model=args.arch, dropout=args.dropout,
-                 crop_num=1, partial_bn=not args.no_partialbn)
+    if args.model == 'TwoStream':
+        model = TwoStream(num_class, args.modality,
+                     base_model=args.arch, dropout=args.dropout,
+                     crop_num=1, partial_bn=not args.no_partialbn)
+    elif args.model == 'TSN':
+        model = TSN(num_class, args.num_segments, args.modality,
+                          base_model=args.arch, dropout=args.dropout,
+                          crop_num=1, partial_bn=not args.no_partialbn)
+    else:
+        print('error!')
+        exit()
 
     crop_size = model.crop_size
     scale_size = model.scale_size
@@ -105,29 +113,54 @@ def main():
     elif args.modality in ['Flow', 'RGBDiff']:
         data_length = 5
 
-    datasettrain = TwoStreamDataSet(args.root_path, args.train_list,
-               new_length=data_length,
-               modality=args.modality,
-               image_tmpl=prefix,
-               transform=torchvision.transforms.Compose([
-                   train_augmentation,
-                   Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
-                   ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
-                   normalize,
-               ]))
+    if args.model == 'TwoStream':
+        datasettrain = TwoStreamDataSet(args.root_path, args.train_list,
+                   new_length=data_length,
+                   modality=args.modality,
+                   image_tmpl=prefix,
+                   transform=torchvision.transforms.Compose([
+                       train_augmentation,
+                       Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                       ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
+                       normalize,
+                   ]))
 
-    datasetval = TwoStreamDataSet(args.root_path, args.val_list,
-               new_length=data_length,
-               modality=args.modality,
-               image_tmpl=prefix,
-               random_shift=False,
-               transform=torchvision.transforms.Compose([
-                   GroupScale(int(scale_size)),
-                   GroupCenterCrop(crop_size),
-                   Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
-                   ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
-                   normalize,
-               ]))
+        datasetval = TwoStreamDataSet(args.root_path, args.val_list,
+                   new_length=data_length,
+                   modality=args.modality,
+                   image_tmpl=prefix,
+                   random_shift=False,
+                   transform=torchvision.transforms.Compose([
+                       GroupScale(int(scale_size)),
+                       GroupCenterCrop(crop_size),
+                       Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                       ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
+                       normalize,
+                   ]))
+    elif args.model == 'TSN':
+        datasettrain = TSNDataSet(args.root_path, args.train_list, args.num_segments,
+                                        new_length=data_length,
+                                        modality=args.modality,
+                                        image_tmpl=prefix,
+                                        transform=torchvision.transforms.Compose([
+                                            train_augmentation,
+                                            Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                                            ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
+                                            normalize,
+                                        ]))
+
+        datasetval = TSNDataSet(args.root_path, args.val_list, args.num_segments,
+                                      new_length=data_length,
+                                      modality=args.modality,
+                                      image_tmpl=prefix,
+                                      random_shift=False,
+                                      transform=torchvision.transforms.Compose([
+                                          GroupScale(int(scale_size)),
+                                          GroupCenterCrop(crop_size),
+                                          Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                                          ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
+                                          normalize,
+                                      ]))
 
     trainvidnum = len(datasettrain)
     valvidnum = len(datasetval)

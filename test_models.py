@@ -1,6 +1,7 @@
 # @Author  : Sky chen
 # @Email   : dzhchxk@126.com
 # @Personal homepage  : https://coderskychen.cn
+# Note that when testing TSN, num_segments=1, and num_segments>1 only on traing phrase.
 
 import os
 import argparse
@@ -10,8 +11,7 @@ import numpy as np
 import torch.nn.parallel
 import torch.optim
 from sklearn.metrics import confusion_matrix
-from dataset import TSNDataSet
-from models import TwoStream
+from models import *
 from transforms import *
 from dataset import *
 import pdb
@@ -19,8 +19,8 @@ from torch.nn import functional as F
 
 
 # options
-parser = argparse.ArgumentParser(
-    description="testing on the full validation set")
+parser = argparse.ArgumentParser(description="testing on the full validation set")
+parser.add_argument('--model', type=str, choices=['TwoStream', 'TSN'])
 parser.add_argument('--modality', type=str, choices=['RGB', 'Flow'])
 parser.add_argument('--weights', type=str)
 parser.add_argument('--train_id', type=str)
@@ -36,7 +36,7 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--gpus', nargs='+', type=int, default=None)
 parser.add_argument('--img_feature_dim',type=int, default=256)
-parser.add_argument('--num_set_segments',type=int, default=1,help='TODO: select multiply set of n-frames from a video')
+parser.add_argument('--k', type=int, default=3)
 parser.add_argument('--softmax', type=int, default=0)
 
 args = parser.parse_args()
@@ -101,7 +101,10 @@ def accuracy(output, target, topk=(1,)):
 categories, args.train_list, args.val_list, args.root_path, prefix = return_something_path(args.modality)
 num_class = len(categories)
 
-net = TwoStream(num_class, args.modality, base_model=args.arch)
+if args.model == 'TwoStream':
+    net = TwoStream(num_class, args.modality, base_model=args.arch)
+elif args.model == 'TSN':
+    net = TSN(num_class, 1, args.modality, base_model=args.arch)
 
 checkpoint = torch.load(os.path.join('/home/mcg/cxk/action-recognition-zoo/results', args.train_id, 'model', args.weights))
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
@@ -120,21 +123,36 @@ elif args.test_crops == 10:
     ])
 else:
     raise ValueError("Only 1 and 10 crops are supported while we got {}".format(args.test_crops))
-
-data_loader = torch.utils.data.DataLoader(
-        TwoStreamDataSet(args.root_path, args.val_list, num_segments=args.test_segments,
-                   new_length=1 if args.modality == "RGB" else 5,
-                   modality=args.modality,
-                   image_tmpl=prefix,
-                   test_mode=True,
-                   transform=torchvision.transforms.Compose([
-                       cropping,
-                       Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
-                       ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
-                       GroupNormalize(net.input_mean, net.input_std),
-                   ])),
-        batch_size=1, shuffle=False,
-        num_workers=args.workers * 2, pin_memory=True)
+if args.model == 'TwoStream':
+    data_loader = torch.utils.data.DataLoader(
+            TwoStreamDataSet(args.root_path, args.val_list, num_segments=args.test_segments,
+                       new_length=1 if args.modality == "RGB" else 5,
+                       modality=args.modality,
+                       image_tmpl=prefix,
+                       test_mode=True,
+                       transform=torchvision.transforms.Compose([
+                           cropping,
+                           Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
+                           ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
+                           GroupNormalize(net.input_mean, net.input_std),
+                       ])),
+            batch_size=1, shuffle=False,
+            num_workers=args.workers * 2, pin_memory=True)
+elif args.model == 'TSN':
+    data_loader = torch.utils.data.DataLoader(
+            TSNDataSet(args.root_path, args.val_list, num_segments=args.test_segments,
+                       new_length=1 if args.modality == "RGB" else 5,
+                       modality=args.modality,
+                       image_tmpl=prefix,
+                       test_mode=True,
+                       transform=torchvision.transforms.Compose([
+                           cropping,
+                           Stack(roll=(args.arch in ['BNInception','InceptionV3'])),
+                           ToTorchFormatTensor(div=(args.arch not in ['BNInception','InceptionV3'])),
+                           GroupNormalize(net.input_mean, net.input_std),
+                       ])),
+            batch_size=1, shuffle=False,
+            num_workers=args.workers * 2, pin_memory=True)
 
 if args.gpus is not None:
     devices = [args.gpus[i] for i in range(args.workers)]
@@ -170,8 +188,7 @@ def eval_video(video_data):
 
     input_var = torch.autograd.Variable(data.view(-1, length, data.size(2), data.size(3)),
                                         volatile=True)
-    rst = net(input_var)    #bs* frames * dim
-
+    rst = net(input_var)
     rst = rst.data.cpu().numpy().copy()
 
     rst = rst.reshape((num_crop, args.test_segments, num_class)).mean(axis=0).reshape((args.test_segments, num_class)).mean(axis=0).reshape((num_class))
@@ -192,8 +209,6 @@ for i, (data, label) in data_gen:
     output.append(rst[1:])
     cnt_time = time.time() - proc_start_time
     prec1, prec5 = accuracy(torch.from_numpy(rst[1]), label, topk=(1, 5))
-    # print(prec1[0])
-    # print(prec5[0])
     top1.update(prec1[0], 1)
     top5.update(prec5[0], 1)
     print('video {} done, total {}/{}, average {:.3f} sec/video, moving Prec@1 {:.3f} Prec@5 {:.3f}'.format(i, i+1,

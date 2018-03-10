@@ -113,7 +113,7 @@ class TwoStreamDataSet(data.Dataset):
         if not self.test_mode:
             sample_indice = [randint(low=1, high=record.num_frames + 2 - self.new_length)]
             if self.modality == 'Flow':
-                sample_indice = sample_indice * 2 - 1  # flow index 1 3 5 7 ...
+                sample_indice = [x * 2 - 1 for x in sample_indice]  # flow index 1 3 5 7 ...
         else:
             sample_indice = self._get_val_indices(record)
 
