@@ -54,10 +54,9 @@ Before using the code you should modify the path as your own.
 - The command to train models:
 ```
 train for spatial stream:
-python main.py RGB two-stream-rgb --arch BNInception --batch_size 256
-
+python main.py TwoStream RGB two-stream-rgb --arch BNInception --batch_size 256 --lr 0.002
 train for temporal stream:
-python main.py Flow two-stream-flow --arch BNInception --batch_size 64 --lr 0.0008
+python main.py TwoStream Flow two-stream-flow --arch BNInception --batch_size 256 --lr 0.0005
 ```
 ### Testing on validation set
 At test time, given a video, i sample a fixed number of frames (25 for spatial stream and 8 for temporal stream in my experiments) with equal temporal spacing between them. From each of the frames i then obtain 10 ConvNet
@@ -67,10 +66,10 @@ whole video are then obtained by averaging the scores across the sampled frames 
 - The command to test models:
 ```
 test for spatial stream:
-python test_models.py --modality RGB --weights TwoStream_RGB_BNInception_checkpoint.pth.tar --train_id two-stream-rgb --save_scores rgb.npz --arch BNInception --test_segments 25
+python test_models.py --model TwoStream --modality RGB --weights TwoStream_RGB_BNInception_best.pth.tar --train_id two-stream-rgb --save_scores rgb.npz --arch BNInception --test_segments 25
 
 test for temporal stream；
-python test_models.py --modality Flow --weights TwoStream_Flow_BNInception_best.pth.tar --train_id two-stream-flow --save_scores flow.npz --arch BNInception --test_segments 8
+python test_models.py --model TwoStream --modality Flow --weights TwoStream_Flow_BNInception_best.pth.tar --train_id two-stream-flow --save_scores flow.npz --arch BNInception --test_segments 25
 
 ```
 After running the test code, we get the precision scores on validation set and the probability for all class is saved in npz files which is useful in late fusion.
@@ -83,8 +82,8 @@ python average_scores.py
 #### Results on validation set
 |Methods|Pre@1|
 |--------------|:-----:|
-|Spatial-stream|-%|
-|Temporal-stream|-%|
-|Two-stream|-%|
+|Spatial-stream|2.54%|
+|Temporal-stream|2.66%|
+|Two-stream|7.4%|
 
 ## Todo: TSN
