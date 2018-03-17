@@ -20,7 +20,7 @@ from torch.nn import functional as F
 
 # options
 parser = argparse.ArgumentParser(description="testing on the full validation set")
-parser.add_argument('--model', type=str, choices=['TwoStream', 'TSN'])
+parser.add_argument('--model', type=str, choices=['TwoStream', 'TSN', 'C3D'])
 parser.add_argument('--modality', type=str, choices=['RGB', 'Flow'])
 parser.add_argument('--weights', type=str)
 parser.add_argument('--train_id', type=str)
@@ -105,6 +105,8 @@ if args.model == 'TwoStream':
     net = TwoStream(num_class, args.modality, base_model=args.arch)
 elif args.model == 'TSN':
     net = TSN(num_class, 1, args.modality, base_model=args.arch)
+elif args.model == 'C3D':
+    net = C3D()
 
 checkpoint = torch.load(os.path.join('/home/mcg/cxk/action-recognition-zoo/results', args.train_id, 'model', args.weights))
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
@@ -153,6 +155,23 @@ elif args.model == 'TSN':
                        ])),
             batch_size=1, shuffle=False,
             num_workers=args.workers * 2, pin_memory=True)
+elif args.model == 'C3D':
+    data_loader = torch.utils.data.DataLoader(
+        C3DDataSet(args.root_path, args.val_list, num_segments=args.test_segments,
+                              new_length=16,
+                              modality=args.modality,
+                              image_tmpl=prefix,
+                              test_mode=True,
+                              random_shift=False,
+                              transform=torchvision.transforms.Compose([
+                                  cropping,
+                                  Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                                  ToTorchFormatTensor(
+                                      div=(args.arch not in ['BNInception', 'InceptionV3', 'C3D'])),
+                                  GroupNormalize(net.input_mean, net.input_std),
+                              ])),
+        batch_size=1, shuffle=False,
+        num_workers=args.workers * 2, pin_memory=True)
 
 if args.gpus is not None:
     devices = [args.gpus[i] for i in range(args.workers)]
@@ -162,6 +181,7 @@ else:
 
 #net = torch.nn.DataParallel(net.cuda(devices[0]), device_ids=devices)
 net = torch.nn.DataParallel(net.cuda())
+# net=net.cuda()
 net.eval()
 
 data_gen = enumerate(data_loader)
@@ -177,6 +197,8 @@ def eval_video(video_data):
 
     if args.modality == 'RGB':
         length = 3
+        if args.model == 'C3D':
+            length = 16
     elif args.modality == 'Flow':
         length = 10
     elif args.modality == 'RGBDiff':
@@ -188,7 +210,7 @@ def eval_video(video_data):
 
     input_var = torch.autograd.Variable(data.view(-1, length, data.size(2), data.size(3)),
                                         volatile=True)
-    rst = net(input_var)
+    rst = net(input_var.cuda())
     rst = rst.data.cpu().numpy().copy()
 
     rst = rst.reshape((num_crop, args.test_segments, num_class)).mean(axis=0).reshape((args.test_segments, num_class)).mean(axis=0).reshape((num_class))

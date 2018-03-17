@@ -4,7 +4,7 @@
 
 import argparse
 parser = argparse.ArgumentParser(description="PyTorch implementation of TwoStream")
-parser.add_argument('model', type=str, choices=['TwoStream', 'TSN'])
+parser.add_argument('model', type=str, choices=['TwoStream', 'TSN', 'C3D'])
 parser.add_argument('modality', type=str, choices=['RGB', 'Flow'])
 parser.add_argument('train_id', type=str)
 parser.add_argument('--num_segments', type=int, default=3)
@@ -22,8 +22,10 @@ parser.add_argument('-b', '--batch_size', default=16, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.005, type=float,
                     metavar='LR', help='initial learning rate')
-parser.add_argument('--lr_steps', default=[28, 55], type=float, nargs="+",
-                    metavar='LRSteps', help='epochs to decay learning rate by 10')
+parser.add_argument('--factor', '--factor', default=0.1, type=float,
+                    help='decay factor')
+parser.add_argument('--lr_steps', default=[30, 55], type=float, nargs="+",
+                    metavar='LRSteps', help='epochs to decay learning rate by factor')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=5e-4, type=float,

@@ -67,14 +67,33 @@ def main():
     args.store_name = '_'.join([args.model, args.modality, args.arch])
     print('storing name: ' + args.store_name)
 
+    policies = -1
     if args.model == 'TwoStream':
         model = TwoStream(num_class, args.modality,
                      base_model=args.arch, dropout=args.dropout,
                      crop_num=1, partial_bn=not args.no_partialbn)
+        policies = model.get_optim_policies()
+
     elif args.model == 'TSN':
         model = TSN(num_class, args.num_segments, args.modality,
                           base_model=args.arch, dropout=args.dropout,
                           crop_num=1, partial_bn=not args.no_partialbn)
+        policies = model.get_optim_policies()
+
+    elif args.model == 'C3D':
+        model = C3D()
+        model_dict = model.state_dict()
+
+        pretrained_dict = torch.load('./model_zoo/c3d.pickle')
+
+        # 1. filter out unnecessary keys
+        pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+        # 2. overwrite entries in the existing state dict
+        model_dict.update(pretrained_dict)
+        # 3. load the new state dict
+        model.load_state_dict(model_dict)
+
+        print('c3d pretrained model loaded~')
     else:
         print('error!')
         exit()
@@ -83,7 +102,6 @@ def main():
     scale_size = model.scale_size
     input_mean = model.input_mean
     input_std = model.input_std
-    policies = model.get_optim_policies()
     train_augmentation = model.get_augmentation()
 
     model = torch.nn.DataParallel(model, device_ids=args.gpus).cuda()
@@ -112,6 +130,9 @@ def main():
         data_length = 1
     elif args.modality in ['Flow', 'RGBDiff']:
         data_length = 5
+
+    if args.modality == 'RGB' and args.model == 'C3D':
+        data_length = 16  # clip
 
     if args.model == 'TwoStream':
         datasettrain = TwoStreamDataSet(args.root_path, args.train_list,
@@ -161,6 +182,31 @@ def main():
                                           ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
                                           normalize,
                                       ]))
+    elif args.model == 'C3D':
+        datasettrain = C3DDataSet(args.root_path, args.train_list, 1,
+                                        new_length=data_length,
+                                        modality=args.modality,
+                                        image_tmpl=prefix,
+                                        transform=torchvision.transforms.Compose([
+                                            train_augmentation,
+                                            Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                                            ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3', 'C3D'])),
+                                            normalize,
+                                        ]))
+
+        datasetval = C3DDataSet(args.root_path, args.val_list, 1,
+                                        new_length=data_length,
+                                        modality=args.modality,
+                                        image_tmpl=prefix,
+                                        random_shift=False,
+                                        transform=torchvision.transforms.Compose([
+                                            GroupScale(int(scale_size)),
+                                            GroupCenterCrop(crop_size),
+                                            Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
+                                            ToTorchFormatTensor(
+                                                div=(args.arch not in ['BNInception', 'InceptionV3', 'C3D'])),
+                                            normalize,
+                                        ]))
 
     trainvidnum = len(datasettrain)
     valvidnum = len(datasetval)
@@ -178,15 +224,18 @@ def main():
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CrossEntropyLoss().cuda()
 
-    for group in policies:
-        print(('group: {} has {} params, lr_mult: {}, decay_mult: {}'.format(
-            group['name'], len(group['params']), group['lr_mult'], group['decay_mult'])))
+    if policies != -1:
+        for group in policies:
+            print(('group: {} has {} params, lr_mult: {}, decay_mult: {}'.format(
+                group['name'], len(group['params']), group['lr_mult'], group['decay_mult'])))
 
-    optimizer = torch.optim.SGD(policies, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+        optimizer = torch.optim.SGD(policies, args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
     # log_training = open(os.path.join(args.root_log, '%s.csv' % args.store_name), 'w')
     for epoch in range(args.start_epoch, args.epochs):
-        adjust_learning_rate(optimizer, epoch, args.lr_steps)
+        adjust_learning_rate(optimizer, epoch, args.lr_steps, args.factor, policies != -1)
 
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch, trainvidnum, summary_w)
@@ -372,14 +421,19 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def adjust_learning_rate(optimizer, epoch, lr_steps):
+def adjust_learning_rate(optimizer, epoch, lr_steps, factor, with_police=True):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    decay = 0.1 ** (sum(epoch >= np.array(lr_steps)))
+    decay = factor ** (sum(epoch >= np.array(lr_steps)))
     lr = args.lr * decay
     decay = args.weight_decay
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr * param_group['lr_mult']
-        param_group['weight_decay'] = decay * param_group['decay_mult']
+    if with_police:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr * param_group['lr_mult']
+            param_group['weight_decay'] = decay * param_group['decay_mult']
+    else:
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+            param_group['weight_decay'] = decay
 
 
 def accuracy(output, target, topk=(1,)):

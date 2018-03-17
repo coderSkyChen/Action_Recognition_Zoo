@@ -6,7 +6,7 @@ import numpy as np
 import pdb
 
 def valid():
-    files_scores = ['/home/mcg/cxk/action-recognition-zoo/results/two-stream-flow/output/flow.npz', '/home/mcg/cxk/action-recognition-zoo/results/two-stream-rgb/output/rgb.npz']
+    files_scores = ['/home/mcg/cxk/action-recognition-zoo/results/tsn-flow/output/flow.npz', '/home/mcg/cxk/action-recognition-zoo/results/tsn-rgb/output/rgb.npz']
 
     allsum = np.zeros([11522, 174])
     labels = []
