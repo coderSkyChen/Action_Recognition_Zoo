@@ -37,7 +37,7 @@ python process_dataset.py
 ```
 
 # Models
-Before using the code you should modify the path as your own.
+Before using the code you should modify the path as your own. The test time for one video is measured on one K80.
 ## Two stream action recognition
 **Main Reference Paper**: [Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
 
@@ -79,11 +79,51 @@ fusion: combine spatial stream and temporal stream results.
 python average_scores.py
 ```
 
-#### Results on validation set
-|Methods|Pre@1|
-|--------------|:-----:|
-|Spatial-stream|2.54%|
-|Temporal-stream|2.66%|
-|Two-stream|7.4%|
+### Results on validation set
+|Methods|Pre@1|test time for one video|
+|--------------|:-----:|:-----:|
+|Spatial-stream|2.54%|0.507s|
+|Temporal-stream|2.66%|0.621s|
+|Two-stream|7.4%|-|
 
-## Todo: TSN
+## Temporal Segment Networks
+**Main Reference Paper**: [Temporal Segment Networks: Towards Good Practices for Deep Action Recognition](https://arxiv.org/abs/1611.05267)
+
+![tsnimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/tsn.png)
+
+
+- Base CNN: BN-Inception pretrained on ImageNet.
+- Partical BN and cross-modality tricks have been used in the code.
+- Spatial stream: it's input is k rgb frames, k is the segment number.
+- Temporal stream: it's input is k stacked optical flows.
+- The consensus function i've implemented is average function.
+
+### Training
+
+```
+train spatial stream:
+python main.py TSN RGB tsn-rgb --arch BNInception --batch_size 128 --lr 0.001 --num_segments 3
+
+train temporal stream:
+python main.py TSN Flow tsn-flow --arch BNInception --batch_size 128 --lr 0.0007 --num_segments 3
+```
+### Testing on validation set
+Note that in testing phrase the k equals 1 according to the paper and it's offical code. So the segment mechanism is only used in training phrase.
+```
+test spatial stream:
+python test_models.py --model TSN --modality RGB --weights TSN_RGB_BNInception_best.pth.tar --train_id tsn-rgb --save_scores rgb.npz --arch BNInception --test_segments 25
+
+test temporal stream:
+python test_models.py --model TSN --modality Flow --weights TSN_Flow_BNInception_best.pth.tar --train_id tsn-flow --save_scores flow.npz --arch BNInception --test_segments 25
+
+fusion:
+python average_scores.py   # need modify the path to your own
+```
+
+### Results on validation set
+|Methods|Pre@1|test time for one video|
+|--------------|:-----:|:-----:|
+|Spatial-stream|2.82%|0.51s|
+|Temporal-stream|4.37%|0.62s|
+|Two-stream|9.2%|-|
+
