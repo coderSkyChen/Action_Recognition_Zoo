@@ -145,9 +145,17 @@ python test_models.py --model C3D --modality RGB --weights C3D_RGB_BNInception_b
 ```
 ### Results on validation set
 - It seems like the C3D is faster than previous methods, but the input size for C3D is `112*112` vs `224*224` for Two-Stream models.
-- The result is not good. This is mainly due to the poor GPU which slows the training phrase, so it's hard to choose proper hyperparameters with my machine, but this code works.
+- The result is not good. I've found that it's hard to traing 3D CNN on this difficult dataset. This is mainly due to the poor GPU which slows the training phrase, so it's hard to choose proper hyperparameters with my machine, but this code works and it'll give you a **quick start**.
 
 |Methods|Pre@1|test time for one video|
 |--------------|:-----:|:-----:|
 |mine pretrained-C3D|2.28%|0.37s|
 |official pretrained-3D|12%|-|
+
+## Our method:DIN
+We will soon public the paper and code.
+### Results on validation set
+|Methods|Pre@1|test time for one video|
+|--------------|:-----:|:-----:|
+|DIN|34.26%|0.06s|
+
