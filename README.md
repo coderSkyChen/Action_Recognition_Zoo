@@ -159,7 +159,7 @@ python test_models.py --model C3D --modality RGB --weights C3D_RGB_BNInception_b
 
 - The code for I3D model is based on [hassony2](https://github.com/hassony2/kinetics_i3d_pytorch)
 - Training is too slow to report the results on Something-Something, but this code is useful
-- Kinetics pretrained model is uploaded to Baidu Cloud
+- Kinetics pretrained model is uploaded to Baidu Cloud: [link](https://pan.baidu.com/s/18pfAM2fYVsA6KxhX4A_pMQ)
 ### Training
 ```
 python main.py I3D RGB i3d-rgb --arch I3D --batch_size 32 --lr 0.002 --num_segments 1 --lr_steps 2 10 20 --factor 0.5
