@@ -84,7 +84,7 @@ python average_scores.py
 |--------------|:-----:|:-----:|
 |Spatial-stream|2.54%|0.507s|
 |Temporal-stream|2.66%|0.621s|
-|Two-stream|7.4%|1.128|
+|Two-stream|7.4%|1.128s|
 
 ## Temporal Segment Networks
 **Main Reference Paper**: [Temporal Segment Networks: Towards Good Practices for Deep Action Recognition](https://arxiv.org/abs/1611.05267)
@@ -125,5 +125,5 @@ python average_scores.py   # need modify the path to your own
 |--------------|:-----:|:-----:|
 |Spatial-stream|2.82%|0.51s|
 |Temporal-stream|4.37%|0.62s|
-|Two-stream|9.2%|1.13|
+|Two-stream|9.2%|1.13s|
 
