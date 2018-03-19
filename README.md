@@ -132,7 +132,7 @@ python average_scores.py   # need modify the path to your own
 
 ![c3d](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/c3d.png)
 
-- finetune the model pretrained on sports-1M, the pretrained model is upload to BaiDu Cloud: [link](https://pan.baidu.com/s/1A-iAn4x45CHFgs7caOAFZw)
+- finetune the model pretrained on sports-1M, the pretrained model is upload to Baidu Cloud: [link](https://pan.baidu.com/s/1A-iAn4x45CHFgs7caOAFZw)
 
 ### Training
 ```
@@ -151,6 +151,19 @@ python test_models.py --model C3D --modality RGB --weights C3D_RGB_BNInception_b
 |--------------|:-----:|:-----:|
 |mine pretrained-C3D|2.28%|0.37s|
 |official pretrained-3D|12%|-|
+
+## I3D
+**Main Reference Paper**: [Quo Vadis, Action Recognition? A New Model and the Kinetics Dataset](https://arxiv.org/abs/1705.07750)
+
+![i3dimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/i3d.png)
+
+- The code for I3D model is based on [hassony2](https://github.com/hassony2/kinetics_i3d_pytorch)
+- Training is too slow to report the results on Something-Something, but this code is useful
+- Kinetics pretrained model is uploaded to Baidu Cloud
+### Training
+```
+python main.py I3D RGB i3d-rgb --arch I3D --batch_size 32 --lr 0.002 --num_segments 1 --lr_steps 2 10 20 --factor 0.5
+```
 
 ## Our method:DIN
 We will soon public the paper and code.
