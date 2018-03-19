@@ -157,5 +157,5 @@ We will soon public the paper and code.
 ### Results on validation set
 |Methods|Pre@1|test time for one video|
 |--------------|:-----:|:-----:|
-|DIN|34.26%|0.06s|
+|DIN|34.26%|0.27s|
 
