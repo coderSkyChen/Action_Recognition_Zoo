@@ -127,3 +127,27 @@ python average_scores.py   # need modify the path to your own
 |Temporal-stream|4.37%|0.62s|
 |TSN-2stream|9.2%|1.13s|
 
+## Pretrained-C3D :3D Convolutional Networks
+**Main Reference Paper**: [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767)
+
+![c3d](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/c3d.png)
+
+- finetune the model pretrained on sports-1M, the pretrained model is upload to BaiDu Cloud: [link](https://pan.baidu.com/s/1A-iAn4x45CHFgs7caOAFZw)
+
+### Training
+```
+python main.py C3D RGB c3d-rgb --arch BNInception --batch_size 32 --lr 0.0001 --num_segments 1 --lr_steps 2 5 10 20 --factor 0.5
+```
+
+### Testing
+```
+python test_models.py --model C3D --modality RGB --weights C3D_RGB_BNInception_best.pth.tar --train_id c3d-rgb --save_scores rgb.npz --test_segments 5 --test_crops 1
+```
+### Results on validation set
+- It seems like the C3D is faster than previous methods, but the input size for C3D is `112*112` vs `224*224` for Two-Stream models.
+- The result is not good. This is mainly due to the poor GPU which slows the training phrase, so it's hard to choose proper hyperparameters with my machine, but this code works.
+
+|Methods|Pre@1|test time for one video|
+|--------------|:-----:|:-----:|
+|mine pretrained-C3D|2.28%|0.37s|
+|official pretrained-3D|12%|-|
