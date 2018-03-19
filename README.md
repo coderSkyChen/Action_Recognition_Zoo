@@ -125,5 +125,5 @@ python average_scores.py   # need modify the path to your own
 |--------------|:-----:|:-----:|
 |Spatial-stream|2.82%|0.51s|
 |Temporal-stream|4.37%|0.62s|
-|Two-stream|9.2%|1.13s|
+|TSN-2stream|9.2%|1.13s|
 
