@@ -1,6 +1,6 @@
 # Action Recognition Zoo
 Codes for popular action recognition models, written based on pytorch, verified on the [something-something](https://www.twentybn.com/datasets/something-something) dataset. This code is built on top of the [TRN-pytorch](https://github.com/metalbubble/TRN-pytorch).
-
+**Note** The main purpose of this repositoriy is to go through several methods and get familiar with their pipelines. Due to the challenge of Something-something dataset and the limitations of our GPUs, the results on Pre@1 is unsatisfactory.
 **Note**: always use git clone --recursive https://github.com/coderSkyChen/Action_Recognition_Zoo to clone this project Otherwise you will not be able to use the inception series CNN architecture.
 
 ## Depencies
