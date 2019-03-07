@@ -43,7 +43,7 @@ Before using the code you should modify the path as your own. The test time for 
 ## Two stream action recognition
 **Main Reference Paper**: [Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
 
-![tsimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/two-stream.png)
+![tsimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/tree/master/Images_for_readme/two-stream.png)
 
 - Base CNN: BN-Inception pretrained on ImageNet.
 - Partical BN and cross-modality tricks have been used in the code.
