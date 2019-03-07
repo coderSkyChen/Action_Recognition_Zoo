@@ -43,8 +43,6 @@ Before using the code you should modify the path as your own. The test time for 
 ## Two stream action recognition
 **Main Reference Paper**: [Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
 
-![tsimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/tree/master/Images_for_readme/two-stream.png)
-
 - Base CNN: BN-Inception pretrained on ImageNet.
 - Partical BN and cross-modality tricks have been used in the code.
 - Spatial stream: it's input is single rgb frame.
@@ -84,8 +82,6 @@ python average_scores.py
 ## Temporal Segment Networks
 **Main Reference Paper**: [Temporal Segment Networks: Towards Good Practices for Deep Action Recognition](https://arxiv.org/abs/1611.05267)
 
-![tsnimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/tsn.png)
-
 
 - Base CNN: BN-Inception pretrained on ImageNet.
 - Partical BN and cross-modality tricks have been used in the code.
@@ -116,9 +112,7 @@ python average_scores.py   # need modify the path to your own
 ```
 
 ## Pretrained-C3D :3D Convolutional Networks
-**Main Reference Paper**: [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767)
-
-![c3d](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/c3d.png)
+**Main Reference Paper**: [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767
 
 - finetune the model pretrained on sports-1M, the pretrained model is upload to Baidu Cloud: [link](https://pan.baidu.com/s/1A-iAn4x45CHFgs7caOAFZw)
 
@@ -137,8 +131,6 @@ python test_models.py --model C3D --modality RGB --weights C3D_RGB_BNInception_b
 
 ## I3D
 **Main Reference Paper**: [Quo Vadis, Action Recognition? A New Model and the Kinetics Dataset](https://arxiv.org/abs/1705.07750)
-
-![i3dimage](https://github.com/coderSkyChen/Action_Recognition_Zoo/raw/master/Images_for_readme/i3d.png)
 
 - The code for I3D model is based on [hassony2](https://github.com/hassony2/kinetics_i3d_pytorch)
 - Training is too slow to report the results on Something-Something, but this code is useful
