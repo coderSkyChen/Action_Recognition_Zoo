@@ -112,7 +112,7 @@ python average_scores.py   # need modify the path to your own
 ```
 
 ## Pretrained-C3D :3D Convolutional Networks
-**Main Reference Paper**: [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767
+**Main Reference Paper**: [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767)
 
 - finetune the model pretrained on sports-1M, the pretrained model is upload to Baidu Cloud: [link](https://pan.baidu.com/s/1A-iAn4x45CHFgs7caOAFZw)
 
